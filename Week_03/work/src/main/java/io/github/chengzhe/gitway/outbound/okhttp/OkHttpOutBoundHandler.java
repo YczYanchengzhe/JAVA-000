@@ -1,24 +1,17 @@
 package io.github.chengzhe.gitway.outbound.okhttp;
 
 import io.github.chengzhe.gitway.outbound.NameThreadFactory;
-import io.github.chengzhe.gitway.outbound.httpclient4.HttpOutBoundHandler;
+import io.github.chengzhe.gitway.outbound.OutBoundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -31,7 +24,7 @@ import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
  * @Date: 2020/11/4 08:32
  * @Description:
  */
-public class OkHttpOutBoundHandler {
+public class OkHttpOutBoundHandler implements OutBoundHandler {
 
     private static Logger logger = LoggerFactory.getLogger(OkHttpOutBoundHandler.class);
 
@@ -68,6 +61,7 @@ public class OkHttpOutBoundHandler {
      * @param fullHttpRequest
      * @param ctx
      */
+    @Override
     public void handler(FullHttpRequest fullHttpRequest, ChannelHandlerContext ctx) {
         final String url = this.backendUrl + fullHttpRequest.uri();
         //执行的处理
@@ -78,9 +72,10 @@ public class OkHttpOutBoundHandler {
         Request request = new Request.Builder().url(uri).build();
 
         try (Response response = okHttpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                // ... handle failed request
+            if (response.isSuccessful()) {
                 handlerResponse(inBound, channelHandlerContext, response);
+            } else {
+                // ... handle failed request
             }
         } catch (Exception e) {
             // ... handle  exception
@@ -91,6 +86,7 @@ public class OkHttpOutBoundHandler {
 
     /**
      * 把真实服务返回的数据 , 写回给用户
+     *
      * @param inBound
      * @param channelHandlerContext
      * @param okHttpResponse

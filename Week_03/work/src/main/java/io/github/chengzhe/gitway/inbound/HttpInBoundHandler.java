@@ -1,7 +1,10 @@
 package io.github.chengzhe.gitway.inbound;
 
 import io.github.chengzhe.gitway.filter.Filter;
+import io.github.chengzhe.gitway.outbound.OutBoundHandler;
 import io.github.chengzhe.gitway.outbound.httpclient4.HttpOutBoundHandler;
+import io.github.chengzhe.gitway.outbound.netty4.NettyHttpOutBoundHandler;
+import io.github.chengzhe.gitway.outbound.okhttp.OkHttpOutBoundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,14 +30,16 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
 
     private final String proxyService;
 
-    private HttpOutBoundHandler httpOutBoundHandler;
+    private OutBoundHandler outBoundHandler;
 
     private Filter filter = new HttpInBoundRequestFilter();
 
     public HttpInBoundHandler(String proxyService) {
         this.proxyService = proxyService;
+//        this.outBoundHandler = new HttpOutBoundHandler(proxyService);
+//        this.outBoundHandler = new OkHttpOutBoundHandler(proxyService);
+        this.outBoundHandler = new NettyHttpOutBoundHandler(proxyService);
     }
-
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
@@ -59,9 +64,7 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
         //此时在 inbound 处理之后 outbound 处理之前 , 进行 inbound filter处理
         filter.filter(fullHttpRequest,ctx);
 
-
-        httpOutBoundHandler.handler(fullHttpRequest, ctx);
-        super.channelRead(ctx, msg);
+        outBoundHandler.handler(fullHttpRequest, ctx);
     }
 
     private void handlerTest(FullHttpRequest fullHttpRequest, ChannelHandlerContext ctx) {
@@ -70,7 +73,6 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
         HttpVersion version = HttpVersion.HTTP_1_1;
         HttpResponseStatus status = HttpResponseStatus.OK;
         try {
-
             response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(value.getBytes("UTF-8")));
         } catch (Exception e) {
             logger.error("处理器错误", e);

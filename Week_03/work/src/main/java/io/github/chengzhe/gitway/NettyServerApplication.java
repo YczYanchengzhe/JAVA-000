@@ -12,13 +12,14 @@ import org.slf4j.LoggerFactory;
  */
 public class NettyServerApplication {
 
-    private static Logger logger = LoggerFactory.getLogger(NettyServerApplication.class);
+    private static Logger logger = null;
     public final static String GATWAY_NAME = "NIOGetWay";
     public final static String GATWAY_VERSION = "1.0.0";
 
     public static void main(String[] args) {
+        logger = LoggerFactory.getLogger(NettyServerApplication.class);
         //真实后端服务端口
-        String proxyServer = System.getProperty("proxyServer", "http://localhost:8080");
+        String proxyServer = System.getProperty("proxyServer", "http://localhost:8801");
         //网关代理层端口
         String proxyPort = System.getProperty("proxyPort", "8888");
 
@@ -32,5 +33,6 @@ public class NettyServerApplication {
         } catch (Exception e) {
             logger.error("netty get way run error : ", e);
         }
+
     }
 }

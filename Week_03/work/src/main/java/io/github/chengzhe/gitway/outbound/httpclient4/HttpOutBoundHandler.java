@@ -1,6 +1,7 @@
 package io.github.chengzhe.gitway.outbound.httpclient4;
 
 import io.github.chengzhe.gitway.outbound.NameThreadFactory;
+import io.github.chengzhe.gitway.outbound.OutBoundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +27,7 @@ import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
  * @Date: 2020/11/3 08:45
  * @Description:
  */
-public class HttpOutBoundHandler {
+public class HttpOutBoundHandler  implements OutBoundHandler {
 
     private static Logger logger = LoggerFactory.getLogger(HttpOutBoundHandler.class);
 
@@ -73,6 +74,7 @@ public class HttpOutBoundHandler {
      * @param fullHttpRequest
      * @param ctx
      */
+    @Override
     public void handler(FullHttpRequest fullHttpRequest, ChannelHandlerContext ctx) {
         final String url = this.backendUrl + fullHttpRequest.uri();
         //执行的处理
@@ -109,17 +111,17 @@ public class HttpOutBoundHandler {
         HttpResponseStatus status = HttpResponseStatus.OK;
         try {
             //直接返回 value
-            String value = "hello world";
-            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(value.getBytes(StandardCharsets.UTF_8)));
-            response.headers().set("Content-Type", "application.json");
-            response.headers().setInt("Content-length", response.content().readableBytes());
-
-            //透传 body
-//            byte[] body = EntityUtils.toByteArray(httpResponse.getEntity());
-//            logger.info("get response from outBound  : {} , length is {}", new String(body), body.length);
-//            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(body));
+//            String value = "hello world";
+//            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(value.getBytes(StandardCharsets.UTF_8)));
 //            response.headers().set("Content-Type", "application.json");
-//            response.headers().setInt("Content-length", Integer.parseInt(httpResponse.getFirstHeader("Content-length").getValue()));
+//            response.headers().setInt("Content-length", response.content().readableBytes());
+
+            //透传 body - 并拼接gitway
+            byte[] body = EntityUtils.toByteArray(httpResponse.getEntity());
+            logger.info("get response from outBound  : {} , length is {}", new String(body), body.length);
+            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(body));
+            response.headers().set("Content-Type", "application.json");
+            response.headers().setInt("Content-length", Integer.parseInt(httpResponse.getFirstHeader("Content-length").getValue()));
 
 
         } catch (Exception e) {
