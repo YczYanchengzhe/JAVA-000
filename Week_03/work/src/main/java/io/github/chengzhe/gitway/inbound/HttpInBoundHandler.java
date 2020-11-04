@@ -1,5 +1,6 @@
 package io.github.chengzhe.gitway.inbound;
 
+import io.github.chengzhe.gitway.filter.Filter;
 import io.github.chengzhe.gitway.outbound.httpclient4.HttpOutBoundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -28,6 +29,8 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
 
     private HttpOutBoundHandler httpOutBoundHandler;
 
+    private Filter filter = new HttpInBoundRequestFilter();
+
     public HttpInBoundHandler(String proxyService) {
         this.proxyService = proxyService;
     }
@@ -52,6 +55,10 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
         if (uri.contains("/test")) {
             handlerTest(fullHttpRequest, ctx);
         }
+
+        //此时在 inbound 处理之后 outbound 处理之前 , 进行 inbound filter处理
+        filter.filter(fullHttpRequest,ctx);
+
 
         httpOutBoundHandler.handler(fullHttpRequest, ctx);
         super.channelRead(ctx, msg);
@@ -85,7 +92,7 @@ public class HttpInBoundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("调用出现异常 : ",cause);
+        logger.error("调用出现异常 : ", cause);
         ctx.close();
     }
 

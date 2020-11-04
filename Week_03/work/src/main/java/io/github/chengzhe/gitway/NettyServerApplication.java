@@ -1,6 +1,8 @@
 package io.github.chengzhe.gitway;
 
 import io.github.chengzhe.gitway.inbound.HttpInboundServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author yanchengzhe
@@ -9,6 +11,8 @@ import io.github.chengzhe.gitway.inbound.HttpInboundServer;
  * @Description: 网关入口
  */
 public class NettyServerApplication {
+
+    private static Logger logger = LoggerFactory.getLogger(NettyServerApplication.class);
     public final static String GATWAY_NAME = "NIOGetWay";
     public final static String GATWAY_VERSION = "1.0.0";
 
@@ -23,6 +27,10 @@ public class NettyServerApplication {
         //网关的前置拦截 :
         HttpInboundServer server = new HttpInboundServer(port, proxyServer);
         System.out.println(GATWAY_NAME + " " + GATWAY_VERSION + " start at http://localhost:" + port + " for server : " + proxyServer);
-
+        try {
+            server.run();
+        } catch (Exception e) {
+            logger.error("netty get way run error : ", e);
+        }
     }
 }

@@ -1,21 +1,26 @@
-package io.github.chengzhe.gitway.outbound.httpclient4;
+package io.github.chengzhe.gitway.outbound.okhttp;
 
 import io.github.chengzhe.gitway.outbound.NameThreadFactory;
+import io.github.chengzhe.gitway.outbound.httpclient4.HttpOutBoundHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
@@ -23,14 +28,15 @@ import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 
 /**
  * @auther: yanchengzhe
- * @Date: 2020/11/3 08:45
+ * @Date: 2020/11/4 08:32
  * @Description:
  */
-public class HttpOutBoundHandler {
+public class OkHttpOutBoundHandler {
 
-    private static Logger logger = LoggerFactory.getLogger(HttpOutBoundHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(OkHttpOutBoundHandler.class);
 
-    private CloseableHttpAsyncClient httpAsyncClient;
+    private OkHttpClient okHttpClient = null;
+
     /**
      * 代理服务
      */
@@ -40,7 +46,7 @@ public class HttpOutBoundHandler {
      */
     private String backendUrl;
 
-    public HttpOutBoundHandler(String backendUrl) {
+    public OkHttpOutBoundHandler(String backendUrl) {
         this.backendUrl = backendUrl.endsWith("/") ? backendUrl.substring(1, backendUrl.length() - 1) : backendUrl;
         int cores = Runtime.getRuntime().availableProcessors() * 2;
         long keepAliveTime = 1000;
@@ -53,75 +59,56 @@ public class HttpOutBoundHandler {
                 new ArrayBlockingQueue<>(queueSize),
                 new NameThreadFactory("proxyService"), handler);
 
-        IOReactorConfig ioReactorConfig = IOReactorConfig.custom()
-                .setConnectTimeout(1000)
-                .setSoTimeout(1000)
-                .setIoThreadCount(cores)
-                .setRcvBufSize(32 * 1024)
-                .build();
-
-        httpAsyncClient = HttpAsyncClients.custom().setMaxConnTotal(40)
-                .setMaxConnPerRoute(8)
-                .setDefaultIOReactorConfig(ioReactorConfig)
-                .setKeepAliveStrategy(((httpResponse, httpContext) -> 6000))
-                .build();
-        httpAsyncClient.start();
+        okHttpClient = new OkHttpClient();
     }
 
     /**
      * 对外暴露的方法 :
+     *
      * @param fullHttpRequest
      * @param ctx
      */
     public void handler(FullHttpRequest fullHttpRequest, ChannelHandlerContext ctx) {
         final String url = this.backendUrl + fullHttpRequest.uri();
         //执行的处理
-        proxyService.submit(()->fetchGet(fullHttpRequest,ctx,url));
+        proxyService.submit(() -> fetchGet(fullHttpRequest, ctx, url));
     }
 
     private void fetchGet(final FullHttpRequest inBound, final ChannelHandlerContext channelHandlerContext, final String uri) {
-        final HttpGet httpGet = new HttpGet(uri);
-        httpAsyncClient.execute(httpGet, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(HttpResponse httpResponse) {
-                handlerResponse(inBound, channelHandlerContext, httpResponse);
-            }
+        Request request = new Request.Builder().url(uri).build();
 
-            @Override
-            public void failed(Exception e) {
-                httpGet.abort();
-                logger.error("http get failed : ", e);
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                // ... handle failed request
+                handlerResponse(inBound, channelHandlerContext, response);
             }
-
-            @Override
-            public void cancelled() {
-                httpGet.abort();
-                logger.error("http get cancelled ");
-            }
-        });
+        } catch (Exception e) {
+            // ... handle  exception
+            exceptionCaught(channelHandlerContext, e);
+        }
 
     }
 
-    private void handlerResponse(final FullHttpRequest inBound, final ChannelHandlerContext channelHandlerContext, final HttpResponse httpResponse) {
+    /**
+     * 把真实服务返回的数据 , 写回给用户
+     * @param inBound
+     * @param channelHandlerContext
+     * @param okHttpResponse
+     */
+    private void handlerResponse(final FullHttpRequest inBound, final ChannelHandlerContext channelHandlerContext, final Response okHttpResponse) {
         FullHttpResponse response = null;
-
         HttpVersion version = HttpVersion.HTTP_1_1;
         HttpResponseStatus status = HttpResponseStatus.OK;
         try {
             //直接返回 value
-            String value = "hello world";
-            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(value.getBytes(StandardCharsets.UTF_8)));
+            String myselfResult = "-->okHttpGetWay-->";
+            String responseBody = Objects.requireNonNull(okHttpResponse.body()).string();
+            // ... do something with response
+            logger.info("okHttp response is {}", responseBody);
+            myselfResult += responseBody;
+            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(myselfResult.getBytes(StandardCharsets.UTF_8)));
             response.headers().set("Content-Type", "application.json");
             response.headers().setInt("Content-length", response.content().readableBytes());
-
-            //透传 body
-//            byte[] body = EntityUtils.toByteArray(httpResponse.getEntity());
-//            logger.info("get response from outBound  : {} , length is {}", new String(body), body.length);
-//            response = new DefaultFullHttpResponse(version, status, Unpooled.wrappedBuffer(body));
-//            response.headers().set("Content-Type", "application.json");
-//            response.headers().setInt("Content-length", Integer.parseInt(httpResponse.getFirstHeader("Content-length").getValue()));
-
-
         } catch (Exception e) {
             logger.error("处理器错误", e);
             status = HttpResponseStatus.NO_CONTENT;

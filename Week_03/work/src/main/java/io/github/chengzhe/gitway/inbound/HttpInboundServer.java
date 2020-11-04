@@ -57,7 +57,8 @@ public class HttpInboundServer {
                     //使用PooledByteBufAllocator来分配内存 : 共享内存
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
             bootstrap.group(bossGroup, workGroup).channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new HttpINboundInitializer(this.proxyServer));
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new HttpInboundInitializer(this.proxyServer));
             Channel channel = bootstrap.bind(port).sync().channel();
             logger.info("开启netty http 服务 , 监听地址和端口为 http://127.0.0.1 : " + port  + "/");
             channel.closeFuture().sync();

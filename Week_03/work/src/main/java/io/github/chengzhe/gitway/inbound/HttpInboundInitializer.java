@@ -13,11 +13,11 @@ import io.netty.handler.codec.http.HttpServerExpectContinueHandler;
  * @Date: 2020/11/3 08:23
  * @Description: 前置拦截器的初始化操作
  */
-public class HttpINboundInitializer extends ChannelInitializer<SocketChannel> {
+public class HttpInboundInitializer extends ChannelInitializer<SocketChannel> {
 
     private String proxyServer;
 
-    public HttpINboundInitializer(String proxyServer) {
+    public HttpInboundInitializer(String proxyServer) {
         this.proxyServer = proxyServer;
     }
 
@@ -30,9 +30,9 @@ public class HttpINboundInitializer extends ChannelInitializer<SocketChannel> {
 //            pipeline.addLast(sslCtx.newHandler(socketChannel.alloc()));
 //        }
 
-        pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpServerExpectContinueHandler());
-        pipeline.addLast(new HttpObjectAggregator(1024 * 1024));
-        pipeline.addLast(new HttpInBoundHandler(this.proxyServer));
+        pipeline.addLast(new HttpServerCodec())
+                .addLast(new HttpServerExpectContinueHandler())
+                .addLast(new HttpObjectAggregator(1024 * 1024))
+                .addLast(new HttpInBoundHandler(this.proxyServer));
     }
 }
