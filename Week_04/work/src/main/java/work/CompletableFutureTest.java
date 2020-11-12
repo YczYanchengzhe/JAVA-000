@@ -1,25 +1,32 @@
-import java.util.concurrent.Callable;
+package work;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
  * @auther: yanchengzhe
  * @Date: 2020/11/9 00:08
  * @Description:
  */
-public class TestThread3 {
+public class CompletableFutureTest {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        int result =  CompletableFuture.supplyAsync( () -> TestThread2.testMethod()).join();
+        int result = CompletableFuture.supplyAsync(CompletableFutureTest::sum).join();
         //先执行  , 之后再获取
         System.out.println("get result is  : " + result);
     }
 
 
-    public static int testMethod() {
-        return 1;
+    public static int sum() {
+        int sumResult = fibo(36);
+        return sumResult;
+    }
+
+    private static int fibo(int a) {
+        if (a < 2)
+            return 1;
+        return fibo(a - 1) + fibo(a - 2);
     }
 
 }

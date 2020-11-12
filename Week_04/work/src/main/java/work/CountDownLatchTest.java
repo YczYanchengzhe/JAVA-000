@@ -1,25 +1,31 @@
 package work;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * @auther: yanchengzhe
- * @Date: 2020/11/11 21:14
+ * @Date: 2020/11/12 11:46
  * @Description:
  */
-public class Join {
+public class CountDownLatchTest {
 
     private static Integer sumResult = null;
+
+    private static  CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public static void main(String[] args) throws InterruptedException {
         long start = System.currentTimeMillis();
         // 在这里创建一个线程或线程池，
         // 异步执行 下面方法
 
-        Thread thread = new Thread(Join::sum);
+        Thread thread = new Thread(()->{
+            sum();
+            countDownLatch.countDown();
+        });
         //线程启动
         thread.start();
 
-        thread.join();
-
+        countDownLatch.await();
         // 确保  拿到result 并输出
         System.out.println("异步计算结果为：" + sumResult);
 

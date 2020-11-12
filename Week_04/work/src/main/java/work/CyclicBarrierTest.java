@@ -1,24 +1,38 @@
 package work;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 /**
  * @auther: yanchengzhe
- * @Date: 2020/11/11 21:14
+ * @Date: 2020/11/12 11:43
  * @Description:
  */
-public class Join {
+public class CyclicBarrierTest {
 
     private static Integer sumResult = null;
 
-    public static void main(String[] args) throws InterruptedException {
+    private static CyclicBarrier cyclicBarrier = new CyclicBarrier(2);
+
+    public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
         long start = System.currentTimeMillis();
         // 在这里创建一个线程或线程池，
         // 异步执行 下面方法
 
-        Thread thread = new Thread(Join::sum);
+        Thread thread = new Thread(()->{
+            sum();
+            try {
+                cyclicBarrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+        });
         //线程启动
         thread.start();
 
-        thread.join();
+        cyclicBarrier.await();
 
         // 确保  拿到result 并输出
         System.out.println("异步计算结果为：" + sumResult);
