@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import properties.SchoolProperties;
+import properties.StudentsProperties;
 import service.SchoolService;
 
 import java.util.ArrayList;
@@ -21,21 +22,16 @@ import java.util.List;
  * @Date: 2020/11/15 23:48
  */
 @EnableConfigurationProperties(SchoolProperties.class)
-@ConditionalOnProperty(name = "school.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "student.enabled", havingValue = "true")
 @Configuration
 public class SpringBootConfiguration {
 
     @Autowired
-    private SchoolProperties schoolProperties;
+    private StudentsProperties studentsProperties;
 
     @ConditionalOnMissingBean
     @Bean
-    SchoolService schoolBeanProcessor() {
-        Student student = new Student(schoolProperties.getStudentId(), schoolProperties.getStudentName());
-        List<Student> studentList = new ArrayList<>();
-        studentList.add(student);
-        Klass klass = new Klass(studentList, schoolProperties.getClassId());
-        School school = new School(klass, schoolProperties.getSchoolName());
-        return new SchoolService(school);
+    Student schoolBeanProcessor() {
+        return studentsProperties.toStudent();
     }
 }

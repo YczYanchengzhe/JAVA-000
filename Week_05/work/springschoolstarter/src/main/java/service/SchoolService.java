@@ -28,7 +28,6 @@ public class SchoolService {
     public void printSchool(){
         if (school != null) {
             System.out.println(school);
-
         }
     }
 

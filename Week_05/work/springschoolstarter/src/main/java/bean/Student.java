@@ -22,12 +22,12 @@ public class Student implements Serializable {
      * 学生姓名
      */
     private String name;
-    
-    public void init(){
-        System.out.println("hello...........");
-    }
-    
-    public Student create(){
-        return new Student(101,"KK101");
+
+
+    public String sayHello(){
+        return "StudentsProperties{" +
+                "studentId=" + id +
+                ", studentName='" + name + '\'' +
+                '}';
     }
 }

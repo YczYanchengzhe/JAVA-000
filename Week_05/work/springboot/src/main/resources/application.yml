@@ -1,8 +1,13 @@
 
-school:
+#school:
+#    enabled: true
+#    school-name: 小明学校
+#    class-id: 1
+#    class-name: 一班
+#    student-id: 2
+#    student-name: 小明同学
+student:
     enabled: true
-    school-name: 小明学校
-    class-id: 1
-    class-name: 一班
-    student-id: 2
-    student-name: 小明同学
+    students:
+        student-id: 1
+        student-name: 小明
