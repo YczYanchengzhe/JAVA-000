@@ -8,11 +8,11 @@
                         http://www.springframework.org/schema/context
                         http://www.springframework.org/schema/context/spring-context-3.2.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <bean id="students"
-          class="test.bean.Students">
+    <chengzhe.test.bean id="students"
+          class="test.Students">
         <property name="id" value="12" />
         <property name="name" value="chengzhe" />
-    </bean>
+    </chengzhe.test.bean>
 
 
 </beans>

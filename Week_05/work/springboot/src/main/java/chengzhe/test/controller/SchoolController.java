@@ -1,11 +1,11 @@
-package controller;
+package chengzhe.test.controller;
 
+import chengzhe.test.bean.Student;
+import chengzhe.test.service.SchoolService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import service.SchoolService;
-
-import javax.annotation.Resource;
 
 /**
  * @ClassName: ScfoolController
@@ -15,12 +15,14 @@ import javax.annotation.Resource;
  */
 @RestController
 public class SchoolController {
+
     @Autowired
     private SchoolService schoolService;
 
-    @GetMapping("/demo")
-    public String demo() {
+    @GetMapping("/demo2")
+    public String demo2() {
         schoolService.printSchool();
-        return "true";
+        return "yun";
     }
+
 }

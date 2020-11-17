@@ -15,8 +15,8 @@
 
 
     <context:annotation-config></context:annotation-config>
-    <bean id="students" class="test.bean.Students"></bean>
-    <bean id="StudentsService" class="test.service.StudentsService"></bean>
+    <chengzhe.test.bean id="students" class="test.Students"></chengzhe.test.bean>
+    <chengzhe.test.bean id="StudentsService" class="test.chengzhe.test.service.StudentsService"></chengzhe.test.bean>
 
 
 

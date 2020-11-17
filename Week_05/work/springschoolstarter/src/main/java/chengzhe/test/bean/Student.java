@@ -1,10 +1,11 @@
-package bean;
+package chengzhe.test.bean;
 
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.context.annotation.Primary;
 
 import java.io.Serializable;
 

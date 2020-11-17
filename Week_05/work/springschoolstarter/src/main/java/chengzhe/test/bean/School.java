@@ -1,8 +1,9 @@
-package bean;
+package chengzhe.test.bean;
 
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Data
 @AllArgsConstructor
 @ToString
+@NoArgsConstructor
 public class School {
     /**
      * 学校的班级

@@ -8,10 +8,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <properties>
+    <chengzhe.test.properties>
         <!--        <spring-version>5.2.7.RELEASE</spring-version>-->
         <spring-version>2.0.8</spring-version>
-    </properties>
+    </chengzhe.test.properties>
 
     <modelVersion>4.0.0</modelVersion>
 

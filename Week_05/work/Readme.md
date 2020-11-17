@@ -1,4 +1,4 @@
-# spring bean 自动装配
+# spring chengzhe.test.bean 自动装配
 
 
 ## 1.XML配置/注解注入
